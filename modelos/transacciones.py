@@ -5,10 +5,13 @@ from pydantic import BaseModel
 class TransaccionBase(BaseModel):
     cantidad: int
     vr_unitario: float
-    factura_id: int
+    Transaccion_id: int
 
 
 class TransaccionCrear(TransaccionBase):
+    pass
+
+class TransaccionEditar(TransaccionBase):
     pass
 
 
