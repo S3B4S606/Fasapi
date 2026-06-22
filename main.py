@@ -45,3 +45,20 @@ async def editar_cliente(cliente_id: int, datos_cliente: ClienteEditar):
     raise HTTPException(
         status_code=400,detail=f"El cliente con id {cliente_id}, no existe"
         )
+
+
+# endpoint para eliminar un cliente de la lista
+@app.delete("/clientes/{cliente_id}")
+async def eliminar_cliente(cliente_id: int):
+    for i, obj_cliente in enumerate(Lista_clientes):
+        if obj_cliente.id == cliente_id:
+            cliente_eliminado = Lista_clientes.pop(i)
+            return {
+                "mensaje": "Cliente eliminado correctamente",
+                "cliente": cliente_eliminado
+            }
+
+    raise HTTPException(
+        status_code=400,
+        detail=f"El cliente con id {cliente_id}, no existe"
+    )
