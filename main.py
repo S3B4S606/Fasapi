@@ -75,6 +75,7 @@ async def listar_factura():
     return Lista_facturas
 
 
+
 @app.get("/facturas/{factura_id}", response_model=Factura)
 async def listar_factura(factura_id: int):
     #recorrer la lista_facturas
@@ -86,9 +87,27 @@ async def listar_factura(factura_id: int):
         wwwdetail=f"La factura con id {factura_id} no existe."
     )
 
-@app.post("/facturas/{id_factura}", response_model=Factura)
-async def crear_factura(id_factura: int, datos_factura: Factura):
-    pass
+
+@app.post("/facturas/{cliente_id}", response_model=Factura)
+async def crear_factura(cliente_id: int, datos_factura: FacturaCrear):
+    #buscar el cliente
+    cliente_encontrado = None
+    for cliente in Lista_clientes:
+        if cliente.id == cliente_id:
+            cliente_encontrado = cliente
+    # mensaje si no existe el cliente
+    if not cliente_encontrado:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail=f"El cliente con id {cliente_id} no existe"
+        )
+
+    #validar datos de la factura
+    factura_val = Factura.model_validate(datos_factura.model_dump())
+    factura_val.cliente = cliente_encontrado
+    #id de la factura
+    factura_val.id = len(Lista_facturas) + 1
+    return factura_val
 
 
 @app.patch("/facturas/{id_factura}", response_model=Factura)
