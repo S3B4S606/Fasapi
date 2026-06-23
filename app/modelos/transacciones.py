@@ -17,4 +17,5 @@ class TransaccionEditar(TransaccionBase):
 
 class Transaccion(TransaccionBase):
     id: int | None = None
+    factura_id: int | None = None
     # aqui va la relacion con el modelo cliente(solo un campo)
