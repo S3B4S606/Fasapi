@@ -2,16 +2,21 @@ from fastapi import APIRouter, HTTPException, status
 from modelos.facturas import Factura, FacturaCrear, FacturaEditar
 from modelos.clientes import Cliente
 from listas import Lista_clientes, Lista_facturas
+from conexion_bd import Sesion_dependencia
+from sqlmodel import select
 
 rutas_factura = APIRouter()
+
 #Lista_facturas: list[Factura] = [] 
 #Lista_clientes: list[Cliente] = []
 
 
 @rutas_factura.get("/facturas/", response_model=list[Factura])
-async def listar_factura():
+async def listar_factura(sesion: Sesion_dependencia):
+    #select * from factura
+    consulta = select(Factura)
+    Lista_facturas = sesion.exec(consulta).all()
     return Lista_facturas
-
 
 
 @rutas_factura.get("/facturas/{factura_id}", response_model=Factura)
@@ -27,25 +32,28 @@ async def listar_factura(factura_id: int):
 
 
 @rutas_factura.post("/facturas/{cliente_id}", response_model=Factura)
-async def crear_factura(cliente_id: int, datos_factura: FacturaCrear):
-    #buscar el cliente
-    cliente_encontrado = None
-    for cliente in Lista_clientes:
-        if cliente.id == cliente_id:
-            cliente_encontrado = cliente
+async def crear_factura(cliente_id: int, datos_factura: FacturaCrear, sesion:Sesion_dependencia):
+    #buscar el cliente en base de datos
+
+    
+    
+    cliente_encontrado = sesion.get(Cliente, cliente_id)
     # mensaje si no existe el cliente
     if not cliente_encontrado:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, 
-            detail=f"El cliente con id {cliente_id} no existe"
+            detail=f"El cliente con id {cliente_id}, no existe.",
         )
 
-    #validar datos de la factura
-    factura_val = Factura.model_validate(datos_factura.model_dump())
-    factura_val.cliente = cliente_encontrado
-    #id de la factura
-    factura_val.id = len(Lista_facturas) + 1
-    Lista_facturas.append(factura_val)
+    #validar datos de la factura-json, pasar dict
+    factura_dict = datos_factura.model_dump()
+    factura_dict["cliente_id"] = cliente_id
+    factura_val = Factura.model_validate(factura_dict)
+   
+    #guardar en bd
+    sesion.add(factura_val)
+    sesion.commit()
+    sesion.refresh(factura_val)
     return factura_val
 
 

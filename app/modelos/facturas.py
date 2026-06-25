@@ -17,7 +17,7 @@ class FacturaBase(SQLModel):
 
     @computed_field
     @property
-    def vr_tota(self) -> float:
+    def vr_total (self) -> float:
         # calcular(cantidad + vr_unitario)
         # consultare id actual de factura
         #factura_id_acual = getattr(self, "id", None)
@@ -42,5 +42,4 @@ class FacturaEditar(FacturaBase):
 
 class Factura(FacturaBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    Cliente_id: int = Field(default=None, foreign_key="cliente.id")
-    
+    cliente_id: int = Field(default=None, foreign_key="cliente.id")
